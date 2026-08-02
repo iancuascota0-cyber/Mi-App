@@ -6,7 +6,12 @@
     <meta name="theme-color" content="#000000">
     <title>Mi Rutina Pro - Liquid Glass Optimized</title>
     <!-- PWA manifest embebido -->
-    <link rel="manifest" href="data:application/manifest+json;utf8,{\"name\":\"Rutina Pro\",\"short_name\":\"Rutina\",\"start_url\":\"/\",\"display\":\"standalone\",\"background_color\":\"#000000\",\"theme_color\":\"#000000\"}">
+    <link rel="manifest" href="manifest.json">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
     <style>
         :root {
             --bg-color: #050508;
