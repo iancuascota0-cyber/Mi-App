@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="theme-color" content="#000000">
+    <title>Mi Rutina Pro - Liquid Glass Optimized</title>
+    <!-- PWA manifest embebido -->
+    <link rel="manifest" href="data:application/manifest+json;utf8,{\"name\":\"Rutina Pro\",\"short_name\":\"Rutina\",\"start_url\":\"/\",\"display\":\"standalone\",\"background_color\":\"#000000\",\"theme_color\":\"#000000\"}">
+    <style>
+        :root {
+            --bg-color: #050508;
+            --glass-bg: rgba(22, 22, 30, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-border-light: rgba(255, 255, 255, 0.25);
+            --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            --text-color: #f2f2f7;
+            --text-muted: #a1a1aa;
+            --primary: rgba(255, 255, 255, 0.15);
+            --accent: #ffffff;
+            --glow: rgba(255, 255, 255, 0.2);
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --blur-amount: 16px;
+        }
+
+        @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+            :root { --glass-bg: rgba(22, 22, 30, 0.55); }
+        }
+
+        [data-theme="tactical"] {
+            --bg-color: #0c0202;
+            --glass-bg: rgba(35, 10, 10, 0.75);
+            --glass-border: rgba(255, 77, 77, 0.2);
+            --glass-border-light: rgba(255, 77, 77, 0.4);
+            --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            --text-color: #fce8e8;
+            --text-muted: #fca5a5;
+            --primary: rgba(239, 68, 68, 0.25);
+            --accent: #ff4d4d;
+            --glow: rgba(255, 77, 77, 0.4);
+            --warning: #fbbf24;
+            --danger: #ef4444;
+        }
+
+        @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+            [data-theme="tactical"] { --glass-bg: rgba(35, 10, 10, 0.55); }
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            background-image:
+                radial-gradient(circle at 15% 15%, rgba(255,255,255,0.05) 0%, transparent 45%),
+                radial-gradient(circle at 85% 75%, rgba(255,255,255,0.03) 0%, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-color);
+            margin: 0; padding: 16px; line-height: 1.5;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+        }
+
+        [data-theme="tactical"] body {
+            background-image:
+                radial-gradient(circle at 15% 15%, rgba(255,0,0,0.12) 0%, transparent 50%),
+                radial-gradient(circle at 85% 75%, rgba(180,0,0,0.08) 0%, transparent 50%);
+        }
+
+        button, label.checkbox-item, .day-btn, .timer-btn, .theme-toggle-btn, .btn-move-day, .intensity-btn {
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, border-color 0.2s ease;
+            will-change: transform;
+        }
+
+        button:active, label.checkbox-item:active, .day-btn:active, .timer-btn:active, .theme-toggle-btn:active, .btn-move-day:active, .intensity-btn:active {
+            transform: scale(0.92);
+        }
+
+        .container { max-width: 800px; margin: 0 auto; padding-top: 195px; }
+        .progress-sticky {
+            position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
+            width: calc(100% - 20px); max-width: 800px;
+            background: var(--glass-bg); border: 1px solid var(--glass-border);
+            backdrop-filter: blur(var(--blur-amount)); -webkit-backdrop-filter: blur(var(--blur-amount));
+            border-radius: 20px; z-index: 1000; padding: 12px 16px;
+            box-shadow: var(--glass-shadow); transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            will-change: transform;
+        }
+        .progress-sticky.completed-all { border-color: var(--accent); box-shadow: 0 0 20px var(--glow), var(--glass-shadow); }
+
+        .top-status-bar { display:flex; justify-content:space-between; align-items:center; font-size:0.82rem; color:var(--text-muted); border-bottom:1px solid var(--glass-border); padding-bottom:6px; margin-bottom:8px; flex-wrap:wrap; gap:8px;}
+        .live-time { color: var(--accent); font-weight:700; font-variant-numeric:tabular-nums; letter-spacing:0.5px; }
+        .tools-container { display:flex; justify-content:space-between; gap:8px; align-items:center; background: rgba(0,0,0,0.25); padding:6px 12px; border-radius:14px; border:1px solid var(--glass-border); font-size:0.82rem; flex-wrap:wrap; }
+        .tool-block { display:flex; align-items:center; gap:6px; }
+        .tool-display { font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size:0.9rem; font-weight:700; color:var(--text-color); background: rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; border:1px solid var(--glass-border); min-width:55px; text-align:center; font-variant-numeric: tabular-nums; }
+        .tool-display.active-timer { color: var(--warning); border-color: var(--warning); animation: pulse 1.5s infinite; }
+
+        .timer-btn, .theme-toggle-btn, .btn-move-day {
+            background: rgba(255,255,255,0.08); border:1px solid var(--glass-border); color:var(--text-color); cursor:pointer; padding:4px 8px; font-weight:600; border-radius:10px;
+        }
+        .theme-toggle-btn { padding:3px 10px; border-radius:12px; font-size:0.78rem; }
+
+        .progress-wrapper { display:flex; flex-direction:column; gap:6px; }
+        .progress-row-top { display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
+        .badge-container { display:flex; gap:6px; }
+        .day-badge { background: rgba(255,255,255,0.08); color:var(--accent); padding:2px 8px; border-radius:10px; font-size:0.72rem; font-weight:600; border:1px solid var(--glass-border); }
+        .streak-badge { background: rgba(251,191,36,0.15); color: var(--warning); border-color: rgba(251,191,36,0.3); }
+        .vol-badge { background: rgba(255,255,255,0.12); color: var(--accent); }
+
+        .progress-bar-container { background: rgba(0,0,0,0.4); height:10px; border-radius:8px; overflow:hidden; position:relative; border:1px solid rgba(255,255,255,0.05); }
+        .progress-bar { background: linear-gradient(90deg, rgba(255,255,255,0.4), var(--accent)); height:100%; width:0%; border-radius:8px; transition: width 0.3s ease-out; will-change: width; }
+        [data-theme="tactical"] .progress-bar { background: linear-gradient(90deg, #ef4444, #ff4d4d); }
+
+        .day-selector { display:grid; grid-template-columns: repeat(6, 1fr); gap:6px; margin-bottom:18px; background: var(--glass-bg); padding:5px; border-radius:16px; border:1px solid var(--glass-border); backdrop-filter: blur(var(--blur-amount)); -webkit-backdrop-filter: blur(var(--blur-amount)); }
+        .day-btn { background:transparent; color:var(--text-muted); border:none; padding:8px 2px; font-weight:600; border-radius:10px; cursor:pointer; text-transform:capitalize; font-size:0.82rem; }
+        .day-btn.active { background: rgba(255,255,255,0.2); color: var(--accent); box-shadow:0 2px 8px rgba(0,0,0,0.2); transform: scale(1.02); }
+        .day-btn.has-moved-content { color: var(--warning); }
+        header { display:flex; justify-content:space-between; align-items:center; padding-bottom:10px; margin-bottom:16px; border-bottom:1px solid var(--glass-border); flex-wrap:wrap; gap:10px; }
+        header h1 { font-size:1.45rem; font-weight:700; margin:0; letter-spacing:-0.5px; }
+
+        .reset-timer-box { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.25); color: var(--warning); padding:6px 12px; border-radius:14px; font-weight:600; font-size:0.78rem; display:flex; gap:6px; align-items:center; }
+        .day-content { display:none; }
+        .day-content.active { display:block; }
+        .day-card { background: var(--glass-bg); border:1px solid var(--glass-border); border-radius:22px; padding:20px; margin-bottom:20px; backdrop-filter: blur(var(--blur-amount)); -webkit-backdrop-filter: blur(var(--blur-amount)); box-shadow: var(--glass-shadow); }
+        .day-title { margin:0; color:var(--accent); font-size:1.15rem; font-weight:700; letter-spacing:-0.3px; }
+        .session-title { color:var(--text-color); font-size:0.95rem; margin-top:16px; margin-bottom:10px; font-weight:600; display:flex; gap:6px; align-items:center; }
+
+        .exercise-group { margin-bottom:12px; padding:10px 12px; background: rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.05); border-radius:14px; }
+        .exercise-name { font-weight:600; font-size:0.9rem; margin-bottom:2px; }
+        .exercise-desc { font-size:0.78rem; color:var(--text-muted); margin-bottom:8px; }
+
+        .checkbox-list { display:flex; flex-wrap:wrap; gap:6px; list-style:none; padding:0; margin:0; }
+        label.checkbox-item {
+            display:flex; align-items:center; gap:8px; background: rgba(255,255,255,0.05); padding:6px 12px; border-radius:12px; cursor:pointer; font-size:0.82rem; font-weight:600; border:1px solid var(--glass-border); user-select:none;
+        }
+        label.checkbox-item input[type="checkbox"] { margin:0; transform:scale(1.05); pointer-events:auto; }
+        label.checkbox-item.checked { background: rgba(255,255,255,0.22); border-color: var(--accent); color: var(--accent); }
+
+        .intensity-box { display:flex; align-items:center; gap:6px; margin-top:16px; padding-top:12px; border-top:1px solid var(--glass-border); font-size:0.8rem; color:var(--text-muted); flex-wrap:wrap; }
+        .intensity-btn { border:1px solid var(--glass-border); background: rgba(0,0,0,0.3); color:var(--text-muted); padding:4px 10px; border-radius:10px; cursor:pointer; font-size:0.75rem; font-weight:600; }
+        .intensity-btn.active[data-level="1"] { background: rgba(255,255,255,0.25); color: #ffffff; border-color: #ffffff; }
+        .intensity-btn.active[data-level="2"] { background: rgba(251,191,36,0.25); color: #fbbf24; border-color: #fbbf24; }
+        .intensity-btn.active[data-level="3"] { background: rgba(248,113,113,0.25); color: #f87171; border-color: #f87171; }
+
+        .history-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        .history-item { background: rgba(0, 0, 0, 0.25); border: 1px solid var(--glass-border); border-radius: 14px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
+        .history-date { font-weight: 700; color: var(--accent); font-size: 0.9rem; }
+        .history-details { font-size: 0.8rem; color: var(--text-muted); text-align: right; }
+
+        @keyframes pulse { 0%{opacity:1;} 50%{opacity:0.5;} 100%{opacity:1;} }
+
+        @media (max-width:600px) {
+            body { padding:10px; }
+            .container { padding-top:235px; }
+            .progress-sticky { width: calc(100% - 16px); top:8px; padding:10px; }
+            .day-selector { gap:3px; padding:3px; grid-template-columns: repeat(3,1fr); }
+            .day-btn { padding:7px 1px; font-size:0.75rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .progress-bar, .tool-display.active-timer, button, label.checkbox-item { transition: none !important; animation: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="progress-sticky" id="sticky-panel" role="region" aria-label="Progreso semanal">
+    <div class="top-status-bar">
+        <span id="live-date" aria-hidden="false">Detectando fecha...</span>
+        <div class="time-container" aria-hidden="false">
+            <button class="theme-toggle-btn" id="theme-toggle" aria-pressed="false" title="Cambiar tema (táctico)">👁️ Modo</button>
+            <span class="live-time" id="live-clock" aria-live="polite">00:00:00</span>
+        </div>
+    </div>
+
+    <div class="tools-container" role="toolbar" aria-label="Herramientas de tiempo">
+        <div class="tool-block" aria-label="Cronómetro">
+            <span style="font-weight:600; color:var(--accent);">⏱️ Cronómetro:</span>
+            <div class="tool-display" id="chrono-display" aria-live="polite">00:00</div>
+            <button class="timer-btn" id="chrono-start-btn" aria-controls="chrono-display">Iniciar</button>
+            <button class="timer-btn" id="chrono-reset-btn">Reset</button>
+        </div>
+
+        <div class="tool-block" aria-label="Temporizador de descanso">
+            <span style="font-weight:600; color:var(--warning);">⏳ T. Descanso:</span>
+            <div class="tool-display" id="timer-display" aria-live="polite">01:30</div>
+            <button class="timer-btn" id="timer-start-btn" aria-controls="timer-display">Iniciar</button>
+            <button class="timer-btn" data-preset="60">1m</button>
+            <button class="timer-btn" data-preset="90">1.5m</button>
+            <button class="timer-btn" data-preset="120">2m</button>
+        </div>
+    </div>
+
+    <div class="progress-wrapper">
+        <div class="progress-row-top">
+            <div class="progress-info" id="progress-text" aria-live="polite">Progreso Semanal: 0% (0/0)</div>
+            <div class="badge-container" aria-hidden="false">
+                <span class="day-badge streak-badge" id="streak-badge" aria-live="polite">🔥 Racha: 0 sem</span>
+                <span class="day-badge vol-badge" id="vol-badge" aria-live="polite">📊 Reps: 0</span>
+                <span class="day-badge" id="day-progress-badge" aria-live="polite">Hoy: 0/0</span>
+            </div>
+        </div>
+        <div class="progress-bar-container" aria-hidden="false">
+            <div class="progress-bar" id="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+        </div>
+    </div>
+</div>
+
+<main class="container" id="main-content">
+    <header>
+        <div>
+            <h1>Control de Entrenamiento</h1>
+            <small style="color: var(--text-muted)">Estrategia, disciplina y volumen controlado.</small>
+        </div>
+        <div class="reset-timer-box" aria-live="polite">
+            🔄 Reinicio en: <span id="weekly-reset-timer">0d 00h 00m 00s</span>
+        </div>
+    </header>
+
+    <nav class="day-selector" role="navigation" aria-label="Selector de días">
+        <button class="day-btn" onclick="switchDay(1)" id="btn-day-1">Lunes</button>
+        <button class="day-btn" onclick="switchDay(2)" id="btn-day-2">Martes</button>
+        <button class="day-btn" onclick="switchDay(3)" id="btn-day-3">Miérc.</button>
+        <button class="day-btn" onclick="switchDay(4)" id="btn-day-4">Jueves</button>
+        <button class="day-btn" onclick="switchDay(5)" id="btn-day-5">Viernes</button>
+        <button class="day-btn" onclick="switchDay(6)" id="btn-day-6" style="display:none;">Sáb.</button>
+        <button class="day-btn" onclick="switchDay(7)" id="btn-day-7" style="display:none;">Dom.</button>
+        <button class="day-btn" onclick="switchDay(8)" id="btn-day-8">📋 Historial</button>
+    </nav>
+
+    <section id="rutina-app" aria-live="polite">
+        <!-- LUNES -->
+        <div id="content-day-1" class="day-content" role="region" aria-label="Lunes">
+            <div class="day-card">
+                <div class="day-title-container" style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 class="day-title" id="title-text-1">Lunes: Fuerza (Empuje) + Resistencia Cooper</h3>
+                    <button class="btn-move-day" onclick="promptMoveDay(1)">📅 Mover Día</button>
+                </div>
+
+                <div class="session-box morning-session">
+                    <div class="session-title">☀️ Sesión Mañana: Cardio de Resistencia</div>
+                    <div class="exercise-group" data-reps="0">
+                        <div class="exercise-name">Trote Continuo</div>
+                        <div class="exercise-desc">35 a 45 minutos a ritmo moderado constante. Acumular kilómetros.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="l-m-1"><input id="l-m-1" type="checkbox"> <span>Bloque Completo</span></label></li>
+                        </ul>
+                    </div>
+                    <div class="exercise-group" data-reps="0">
+                        <div class="exercise-name">Flexibilidad Pasiva</div>
+                        <div class="exercise-desc">15 min. Estiramiento profundo de piernas y espalda baja.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="l-m-2"><input id="l-m-2" type="checkbox"> <span>Sesión Completada</span></label></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="session-box night-session">
+                    <div class="session-title">🌙 Sesión Tarde/Noche: Fuerza e Hipertrofia</div>
+
+                    <div class="exercise-group" data-reps="20">
+                        <div class="exercise-name">Flexiones de pecho declinadas (pies elevados)</div>
+                        <div class="exercise-desc">Enfoque: Parte alta del pecho. Series al fallo estricto.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="l-n-1-1"><input id="l-n-1-1" type="checkbox"> <span>Ser. 1</span></label></li>
+                            <li><label class="checkbox-item" for="l-n-1-2"><input id="l-n-1-2" type="checkbox"> <span>Ser. 2</span></label></li>
+                            <li><label class="checkbox-item" for="l-n-1-3"><input id="l-n-1-3" type="checkbox"> <span>Ser. 3</span></label></li>
+                            <li><label class="checkbox-item" for="l-n-1-4"><input id="l-n-1-4" type="checkbox"> <span>Ser. 4</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="18">
+                        <div class="exercise-name">Press de banca en el suelo con mancuerna (Unilateral)</div>
+                        <div class="exercise-desc">4 series x 15-20 repeticiones por brazo. Baja lento y aprieta.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="l-n-2-1"><input id="l-n-2-1" type="checkbox"> <span>Ser. 1</span></label></li>
+                            <li><label class="checkbox-item" for="l-n-2-2"><input id="l-n-2-2" type="checkbox"> <span>Ser. 2</span></label></li>
+                            <li><label class="checkbox-item" for="l-n-2-3"><input id="l-n-2-3" type="checkbox"> <span>Ser. 3</span></label></li>
+                            <li><label class="checkbox-item" for="l-n-2-4"><input id="l-n-2-4" type="checkbox"> <span>Ser. 4</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="18">
+                        <div class="exercise-name">Flexiones de pecho normales (Estrictas)</div>
+                        <div class="exercise-desc">4 series x 15-20 repeticiones.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="l-n-3-1"><input id="l-n-3-1" type="checkbox"> <span>Ser. 1</span></label></li>
+                            <li><label class="checkbox-item" for="l-n-3-2"><input id="l-n-3-2" type="checkbox"> <span>Ser. 2</span></label></li>
+                            <li><label class="checkbox-item" for="l-n-3-3"><input id="l-n-3-3" type="checkbox"> <span>Ser. 3</span></label></li>
+                            <li><label class="checkbox-item" for="l-n-3-4"><input id="l-n-3-4" type="checkbox"> <span>Ser. 4</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="15">
+                        <div class="exercise-name">Copa de tríceps a dos manos (Mancuerna)</div>
+                        <div class="exercise-desc">4 series x 15 repeticiones. Extensión vertical controlada.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="l-n-4-1"><input id="l-n-4-1" type="checkbox"> <span>Ser. 1</span></label></li>
+                            <li><label class="checkbox-item" for="l-n-4-2"><input id="l-n-4-2" type="checkbox"> <span>Ser. 2</span></label></li>
+                            <li><label class="checkbox-item" for="l-n-4-3"><input id="l-n-4-3" type="checkbox"> <span>Ser. 3</span></label></li>
+                            <li><label class="checkbox-item" for="l-n-4-4"><input id="l-n-4-4" type="checkbox"> <span>Ser. 4</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="15">
+                        <div class="exercise-name">Fondos en silla para Tríceps</div>
+                        <div class="exercise-desc">4 series al fallo muscular.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="l-n-5-1"><input id="l-n-5-1" type="checkbox"> <span>Ser. 1</span></label></li>
+                            <li><label class="checkbox-item" for="l-n-5-2"><input id="l-n-5-2" type="checkbox"> <span>Ser. 2</span></label></li>
+                            <li><label class="checkbox-item" for="l-n-5-3"><input id="l-n-5-3" type="checkbox"> <span>Ser. 3</span></label></li>
+                            <li><label class="checkbox-item" for="l-n-5-4"><input id="l-n-5-4" type="checkbox"> <span>Ser. 4</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="12">
+                        <div class="exercise-name">Flexiones de pecho diamante</div>
+                        <div class="exercise-desc">3 series al fallo.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="l-n-6-1"><input id="l-n-6-1" type="checkbox"> <span>Ser. 1</span></label></li>
+                            <li><label class="checkbox-item" for="l-n-6-2"><input id="l-n-6-2" type="checkbox"> <span>Ser. 2</span></label></li>
+                            <li><label class="checkbox-item" for="l-n-6-3"><input id="l-n-6-3" type="checkbox"> <span>Ser. 3</span></label></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="intensity-box" data-day="1">
+                    <span>Percepción de Esfuerzo:</span>
+                    <button class="intensity-btn" data-level="1" onclick="setIntensity(1,1)">Suave</button>
+                    <button class="intensity-btn" data-level="2" onclick="setIntensity(1,2)">Óptimo</button>
+                    <button class="intensity-btn" data-level="3" onclick="setIntensity(1,3)">Extremo</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MARTES -->
+        <div id="content-day-2" class="day-content" role="region" aria-label="Martes">
+            <div class="day-card">
+                <div class="day-title-container" style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 class="day-title" id="title-text-2">Martes: Fuerza (Tracción) + Sprints y Agilidad</h3>
+                    <button class="btn-move-day" onclick="promptMoveDay(2)">📅 Mover Día</button>
+                </div>
+
+                <div class="session-box morning-session">
+                    <div class="session-title">☀️ Sesión Mañana: Potencia y Velocidad</div>
+                    <div class="exercise-group" data-reps="0">
+                        <div class="exercise-name">Calentamiento</div>
+                        <div class="exercise-desc">10 minutos de trote suave y movilidad dinámicas.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="m-m-1"><input id="m-m-1" type="checkbox"> <span>Completado</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="0">
+                        <div class="exercise-name">Sprints de Alta Intensidad</div>
+                        <div class="exercise-desc">8 series x 60 metros a velocidad máxima. Recuperación: 1.5 min.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="m-m-2-1"><input id="m-m-2-1" type="checkbox"> <span>S1</span></label></li>
+                            <li><label class="checkbox-item" for="m-m-2-2"><input id="m-m-2-2" type="checkbox"> <span>S2</span></label></li>
+                            <li><label class="checkbox-item" for="m-m-2-3"><input id="m-m-2-3" type="checkbox"> <span>S3</span></label></li>
+                            <li><label class="checkbox-item" for="m-m-2-4"><input id="m-m-2-4" type="checkbox"> <span>S4</span></label></li>
+                            <li><label class="checkbox-item" for="m-m-2-5"><input id="m-m-2-5" type="checkbox"> <span>S5</span></label></li>
+                            <li><label class="checkbox-item" for="m-m-2-6"><input id="m-m-2-6" type="checkbox"> <span>S6</span></label></li>
+                            <li><label class="checkbox-item" for="m-m-2-7"><input id="m-m-2-7" type="checkbox"> <span>S7</span></label></li>
+                            <li><label class="checkbox-item" for="m-m-2-8"><input id="m-m-2-8" type="checkbox"> <span>S8</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="0">
+                        <div class="exercise-name">Flexibilidad Dinámica</div>
+                        <div class="exercise-desc">15 min. Zancadas profundas e hiladas de cadera.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="m-m-3"><input id="m-m-3" type="checkbox"> <span>Completado</span></label></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="session-box night-session">
+                    <div class="session-title">🌙 Sesión Tarde/Noche: Fuerza e Hipertrofia</div>
+
+                    <div class="exercise-group" data-reps="18">
+                        <div class="exercise-name">Remo con mancuerna a un brazo (Silla)</div>
+                        <div class="exercise-desc">4 series x 15-20 repeticiones por lado.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="m-n-1-1"><input id="m-n-1-1" type="checkbox"> <span>Ser. 1</span></label></li>
+                            <li><label class="checkbox-item" for="m-n-1-2"><input id="m-n-1-2" type="checkbox"> <span>Ser. 2</span></label></li>
+                            <li><label class="checkbox-item" for="m-n-1-3"><input id="m-n-1-3" type="checkbox"> <span>Ser. 3</span></label></li>
+                            <li><label class="checkbox-item" for="m-n-1-4"><input id="m-n-1-4" type="checkbox"> <span>Ser. 4</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="20">
+                        <div class="exercise-name">Remo libre con mancuerna a dos manos (Inclinado)</div>
+                        <div class="exercise-desc">4 series x 20 repeticiones con tempo controlado.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="m-n-2-1"><input id="m-n-2-1" type="checkbox"> <span>Ser. 1</span></label></li>
+                            <li><label class="checkbox-item" for="m-n-2-2"><input id="m-n-2-2" type="checkbox"> <span>Ser. 2</span></label></li>
+                            <li><label class="checkbox-item" for="m-n-2-3"><input id="m-n-2-3" type="checkbox"> <span>Ser. 3</span></label></li>
+                            <li><label class="checkbox-item" for="m-n-2-4"><input id="m-n-2-4" type="checkbox"> <span>Ser. 4</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="14">
+                        <div class="exercise-name">Curl de bíceps concentrado (Mancuerna)</div>
+                        <div class="exercise-desc">4 series x 12-15 repeticiones por brazo.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="m-n-3-1"><input id="m-n-3-1" type="checkbox"> <span>Ser. 1</span></label></li>
+                            <li><label class="checkbox-item" for="m-n-3-2"><input id="m-n-3-2" type="checkbox"> <span>Ser. 2</span></label></li>
+                            <li><label class="checkbox-item" for="m-n-3-3"><input id="m-n-3-3" type="checkbox"> <span>Ser. 3</span></label></li>
+                            <li><label class="checkbox-item" for="m-n-3-4"><input id="m-n-3-4" type="checkbox"> <span>Ser. 4</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="15">
+                        <div class="exercise-name">Curl de bíceps martillo (Mancuerna)</div>
+                        <div class="exercise-desc">4 series x 15 repeticiones por brazo.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="m-n-4-1"><input id="m-n-4-1" type="checkbox"> <span>Ser. 1</span></label></li>
+                            <li><label class="checkbox-item" for="m-n-4-2"><input id="m-n-4-2" type="checkbox"> <span>Ser. 2</span></label></li>
+                            <li><label class="checkbox-item" for="m-n-4-3"><input id="m-n-4-3" type="checkbox"> <span>Ser. 3</span></label></li>
+                            <li><label class="checkbox-item" for="m-n-4-4"><input id="m-n-4-4" type="checkbox"> <span>Ser. 4</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="20">
+                        <div class="exercise-name">Superman (Lumbares)</div>
+                        <div class="exercise-desc">4 series x 20 repeticiones. Sostén 2s arriba.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="m-n-5-1"><input id="m-n-5-1" type="checkbox"> <span>Ser. 1</span></label></li>
+                            <li><label class="checkbox-item" for="m-n-5-2"><input id="m-n-5-2" type="checkbox"> <span>Ser. 2</span></label></li>
+                            <li><label class="checkbox-item" for="m-n-5-3"><input id="m-n-5-3" type="checkbox"> <span>Ser. 3</span></label></li>
+                            <li><label class="checkbox-item" for="m-n-5-4"><input id="m-n-5-4" type="checkbox"> <span>Ser. 4</span></label></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="intensity-box" data-day="2">
+                    <span>Percepción de Esfuerzo:</span>
+                    <button class="intensity-btn" data-level="1" onclick="setIntensity(2,1)">Suave</button>
+                    <button class="intensity-btn" data-level="2" onclick="setIntensity(2,2)">Óptimo</button>
+                    <button class="intensity-btn" data-level="3" onclick="setIntensity(2,3)">Extremo</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MIÉRCOLES -->
+        <div id="content-day-3" class="day-content" role="region" aria-label="Miércoles">
+            <div class="day-card">
+                <div class="day-title-container" style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 class="day-title" id="title-text-3">Miércoles: Pierna Completa + Core Militar</h3>
+                    <button class="btn-move-day" onclick="promptMoveDay(3)">📅 Mover Día</button>
+                </div>
+
+                <div class="session-box morning-session">
+                    <div class="session-title">☀️ Sesión Mañana: Recuperación Activa</div>
+                    <div class="exercise-group" data-reps="0">
+                        <div class="exercise-name">Caminata Ágil</div>
+                        <div class="exercise-desc">20 minutos para flujo sanguíneo.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="mx-m-1"><input id="mx-m-1" type="checkbox"> <span>Completado</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="0">
+                        <div class="exercise-name">Rutina de Flexibilidad Total</div>
+                        <div class="exercise-desc">30 min. Enfoque en cadera, split frontal/lateral y columna.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="mx-m-2"><input id="mx-m-2" type="checkbox"> <span>Completado</span></label></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="session-box night-session">
+                    <div class="session-title">🌙 Sesión Tarde/Noche: Tren Inferior y Core</div>
+
+                    <div class="exercise-group" data-reps="25">
+                        <div class="exercise-name">Sentadillas Goblet (Mancuerna)</div>
+                        <div class="exercise-desc">4 series x 25 repeticiones. Rompe los 90 grados.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="mx-n-1-1"><input id="mx-n-1-1" type="checkbox"> <span>Ser. 1</span></label></li>
+                            <li><label class="checkbox-item" for="mx-n-1-2"><input id="mx-n-1-2" type="checkbox"> <span>Ser. 2</span></label></li>
+                            <li><label class="checkbox-item" for="mx-n-1-3"><input id="mx-n-1-3" type="checkbox"> <span>Ser. 3</span></label></li>
+                            <li><label class="checkbox-item" for="mx-n-1-4"><input id="mx-n-1-4" type="checkbox"> <span>Ser. 4</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="15">
+                        <div class="exercise-name">Zancadas explosivas hacia atrás</div>
+                        <div class="exercise-desc">4 series x 15 repeticiones por pierna.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="mx-n-2-1"><input id="mx-n-2-1" type="checkbox"> <span>Ser. 1</span></label></li>
+                            <li><label class="checkbox-item" for="mx-n-2-2"><input id="mx-n-2-2" type="checkbox"> <span>Ser. 2</span></label></li>
+                            <li><label class="checkbox-item" for="mx-n-2-3"><input id="mx-n-2-3" type="checkbox"> <span>Ser. 3</span></label></li>
+                            <li><label class="checkbox-item" for="mx-n-2-4"><input id="mx-n-2-4" type="checkbox"> <span>Ser. 4</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="12">
+                        <div class="exercise-name">Peso muerto rumano a una pierna</div>
+                        <div class="exercise-desc">4 series x 12 repeticiones por pierna.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="mx-n-3-1"><input id="mx-n-3-1" type="checkbox"> <span>Ser. 1</span></label></li>
+                            <li><label class="checkbox-item" for="mx-n-3-2"><input id="mx-n-3-2" type="checkbox"> <span>Ser. 2</span></label></li>
+                            <li><label class="checkbox-item" for="mx-n-3-3"><input id="mx-n-3-3" type="checkbox"> <span>Ser. 3</span></label></li>
+                            <li><label class="checkbox-item" for="mx-n-3-4"><input id="mx-n-3-4" type="checkbox"> <span>Ser. 4</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="25">
+                        <div class="exercise-name">Elevación de talones a una pierna</div>
+                        <div class="exercise-desc">4 series x 25 repeticiones por pierna.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="mx-n-4-1"><input id="mx-n-4-1" type="checkbox"> <span>Ser. 1</span></label></li>
+                            <li><label class="checkbox-item" for="mx-n-4-2"><input id="mx-n-4-2" type="checkbox"> <span>Ser. 2</span></label></li>
+                            <li><label class="checkbox-item" for="mx-n-4-3"><input id="mx-n-4-3" type="checkbox"> <span>Ser. 3</span></label></li>
+                            <li><label class="checkbox-item" for="mx-n-4-4"><input id="mx-n-4-4" type="checkbox"> <span>Ser. 4</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="session-title" style="margin-top:16px; border-top:1px solid var(--glass-border); padding-top:10px;">⚡ Circuito de Abdominales Institucionales</div>
+
+                    <div class="exercise-group" data-reps="45">
+                        <div class="exercise-name">Abdominales clásicos policiales</div>
+                        <div class="exercise-desc">3 series x 1 minuto. Manos tras la cabeza. (Meta > 45).</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="mx-n-5-1"><input id="mx-n-5-1" type="checkbox"> <span>Minuto 1</span></label></li>
+                            <li><label class="checkbox-item" for="mx-n-5-2"><input id="mx-n-5-2" type="checkbox"> <span>Minuto 2</span></label></li>
+                            <li><label class="checkbox-item" for="mx-n-5-3"><input id="mx-n-5-3" type="checkbox"> <span>Minuto 3</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="0">
+                        <div class="exercise-name">Plancha isométrica</div>
+                        <div class="exercise-desc">3 series de 1.5 minutos strictly.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="mx-n-6-1"><input id="mx-n-6-1" type="checkbox"> <span>Bloque 1</span></label></li>
+                            <li><label class="checkbox-item" for="mx-n-6-2"><input id="mx-n-6-2" type="checkbox"> <span>Bloque 2</span></label></li>
+                            <li><label class="checkbox-item" for="mx-n-6-3"><input id="mx-n-6-3" type="checkbox"> <span>Bloque 3</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="20">
+                        <div class="exercise-name">Elevación de piernas tensas</div>
+                        <div class="exercise-desc">3 series x 20 repeticiones.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="mx-n-7-1"><input id="mx-n-7-1" type="checkbox"> <span>Ser. 1</span></label></li>
+                            <li><label class="checkbox-item" for="mx-n-7-2"><input id="mx-n-7-2" type="checkbox"> <span>Ser. 2</span></label></li>
+                            <li><label class="checkbox-item" for="mx-n-7-3"><input id="mx-n-7-3" type="checkbox"> <span>Ser. 3</span></label></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="intensity-box" data-day="3">
+                    <span>Percepción de Esfuerzo:</span>
+                    <button class="intensity-btn" data-level="1" onclick="setIntensity(3,1)">Suave</button>
+                    <button class="intensity-btn" data-level="2" onclick="setIntensity(3,2)">Óptimo</button>
+                    <button class="intensity-btn" data-level="3" onclick="setIntensity(3,3)">Extremo</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- JUEVES -->
+        <div id="content-day-4" class="day-content" role="region" aria-label="Jueves">
+            <div class="day-card">
+                <div class="day-title-container" style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 class="day-title" id="title-text-4">Jueves: Hombros y Trapecio + Fartlek Policial</h3>
+                    <button class="btn-move-day" onclick="promptMoveDay(4)">📅 Mover Día</button>
+                </div>
+
+                <div class="session-box morning-session">
+                    <div class="session-title">☀️ Sesión Mañana: Cardio Fartlek</div>
+                    <div class="exercise-group" data-reps="0">
+                        <div class="exercise-name">Fartlek de Alta Exigencia</div>
+                        <div class="exercise-desc">30 min: 1 min sprint (80-90%) x 2 min trote suave.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="j-m-1"><input id="j-m-1" type="checkbox"> <span>Bloque Fartlek (30 min)</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="0">
+                        <div class="exercise-name">Flexibilidad Pasiva</div>
+                        <div class="exercise-desc">15 min enfocado en tren inferior.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="j-m-2"><input id="j-m-2" type="checkbox"> <span>Completado</span></label></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="session-box night-session">
+                    <div class="session-title">🌙 Sesión Tarde/Noche: Hombros y Trapecio</div>
+
+                    <div class="exercise-group" data-reps="14">
+                        <div class="exercise-name">Press militar unilateral de pie</div>
+                        <div class="exercise-desc">4 series x 12-15 repeticiones por brazo.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="j-n-1-1"><input id="j-n-1-1" type="checkbox"> <span>Ser. 1</span></label></li>
+                            <li><label class="checkbox-item" for="j-n-1-2"><input id="j-n-1-2" type="checkbox"> <span>Ser. 2</span></label></li>
+                            <li><label class="checkbox-item" for="j-n-1-3"><input id="j-n-1-3" type="checkbox"> <span>Ser. 3</span></label></li>
+                            <li><label class="checkbox-item" for="j-n-1-4"><input id="j-n-1-4" type="checkbox"> <span>Ser. 4</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="18">
+                        <div class="exercise-name">Elevaciones laterales a un brazo</div>
+                        <div class="exercise-desc">4 series x 15-20 repeticiones por lado.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="j-n-2-1"><input id="j-n-2-1" type="checkbox"> <span>Ser. 1</span></label></li>
+                            <li><label class="checkbox-item" for="j-n-2-2"><input id="j-n-2-2" type="checkbox"> <span>Ser. 2</span></label></li>
+                            <li><label class="checkbox-item" for="j-n-2-3"><input id="j-n-2-3" type="checkbox"> <span>Ser. 3</span></label></li>
+                            <li><label class="checkbox-item" for="j-n-2-4"><input id="j-n-2-4" type="checkbox"> <span>Ser. 4</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="20">
+                        <div class="exercise-name">Pájaros (Deltoides posterior)</div>
+                        <div class="exercise-desc">4 series x 20 repeticiones.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="j-n-3-1"><input id="j-n-3-1" type="checkbox"> <span>Ser. 1</span></label></li>
+                            <li><label class="checkbox-item" for="j-n-3-2"><input id="j-n-3-2" type="checkbox"> <span>Ser. 2</span></label></li>
+                            <li><label class="checkbox-item" for="j-n-3-3"><input id="j-n-3-3" type="checkbox"> <span>Ser. 3</span></label></li>
+                            <li><label class="checkbox-item" for="j-n-3-4"><input id="j-n-3-4" type="checkbox"> <span>Ser. 4</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="20">
+                        <div class="exercise-name">Encogimientos de hombros (Trapecio)</div>
+                        <div class="exercise-desc">4 series x 20 repeticiones.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="j-n-4-1"><input id="j-n-4-1" type="checkbox"> <span>Ser. 1</span></label></li>
+                            <li><label class="checkbox-item" for="j-n-4-2"><input id="j-n-4-2" type="checkbox"> <span>Ser. 2</span></label></li>
+                            <li><label class="checkbox-item" for="j-n-4-3"><input id="j-n-4-3" type="checkbox"> <span>Ser. 3</span></label></li>
+                            <li><label class="checkbox-item" for="j-n-4-4"><input id="j-n-4-4" type="checkbox"> <span>Ser. 4</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="10">
+                        <div class="exercise-name">Flexiones "Pike" (En V)</div>
+                        <div class="exercise-desc">3 series al fallo. Cadera elevada.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="j-n-5-1"><input id="j-n-5-1" type="checkbox"> <span>Ser. 1</span></label></li>
+                            <li><label class="checkbox-item" for="j-n-5-2"><input id="j-n-5-2" type="checkbox"> <span>Ser. 2</span></label></li>
+                            <li><label class="checkbox-item" for="j-n-5-3"><input id="j-n-5-3" type="checkbox"> <span>Ser. 3</span></label></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="intensity-box" data-day="4">
+                    <span>Percepción de Esfuerzo:</span>
+                    <button class="intensity-btn" data-level="1" onclick="setIntensity(4,1)">Suave</button>
+                    <button class="intensity-btn" data-level="2" onclick="setIntensity(4,2)">Óptimo</button>
+                    <button class="intensity-btn" data-level="3" onclick="setIntensity(4,3)">Extremo</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIERNES -->
+        <div id="content-day-5" class="day-content" role="region" aria-label="Viernes">
+            <div class="day-card">
+                <div class="day-title-container" style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 class="day-title" id="title-text-5">Viernes: Circuito Metabólico Militar + Agilidad Anaeróbica</h3>
+                    <button class="btn-move-day" onclick="promptMoveDay(5)">📅 Mover Día</button>
+                </div>
+
+                <div class="session-box morning-session">
+                    <div class="session-title">☀️ Sesión Mañana: Resistencia y Agilidad Crítica</div>
+
+                    <div class="exercise-group" data-reps="0">
+                        <div class="exercise-name">Trote de resistencia</div>
+                        <div class="exercise-desc">30 minutos a ritmo alegre.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="v-m-1"><input id="v-m-1" type="checkbox"> <span>Bloque Completo (30 min)</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="25">
+                        <div class="exercise-name">Práctica del Bloque de Burpees</div>
+                        <div class="exercise-desc">4 series de 1 minuto a reps máximas.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="v-m-2-1"><input id="v-m-2-1" type="checkbox"> <span>Minuto 1</span></label></li>
+                            <li><label class="checkbox-item" for="v-m-2-2"><input id="v-m-2-2" type="checkbox"> <span>Minuto 2</span></label></li>
+                            <li><label class="checkbox-item" for="v-m-2-3"><input id="v-m-2-3" type="checkbox"> <span>Minuto 3</span></label></li>
+                            <li><label class="checkbox-item" for="v-m-2-4"><input id="v-m-2-4" type="checkbox"> <span>Minuto 4</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div class="exercise-group" data-reps="0">
+                        <div class="exercise-name">Flexibilidad Estática Extrema</div>
+                        <div class="exercise-desc">20 minutos de estiramientos profundos.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="v-m-3"><input id="v-m-3" type="checkbox"> <span>Completado</span></label></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="session-box night-session">
+                    <div class="session-title">🌙 Sesión Tarde/Noche: Circuito Metabólico</div>
+
+                    <div class="exercise-group" data-reps="0">
+                        <div class="exercise-name">Formato del Circuito Estricto</div>
+                        <div class="exercise-desc">Estaciones seguidas sin pausa. Descansa 2 min entre vueltas.</div>
+                        <ul class="checkbox-list">
+                            <li><label class="checkbox-item" for="v-n-v1"><input id="v-n-v1" type="checkbox"> <span>Vuelta 1</span></label></li>
+                            <li><label class="checkbox-item" for="v-n-v2"><input id="v-n-v2" type="checkbox"> <span>Vuelta 2</span></label></li>
+                            <li><label class="checkbox-item" for="v-n-v3"><input id="v-n-v3" type="checkbox"> <span>Vuelta 3</span></label></li>
+                            <li><label class="checkbox-item" for="v-n-v4"><input id="v-n-v4" type="checkbox"> <span>Vuelta 4</span></label></li>
+                        </ul>
+                    </div>
+
+                    <div style="background: rgba(0,0,0,0.25); border:1px solid var(--glass-border); padding:12px; border-radius:14px;">
+                        <div style="font-size:0.82rem; margin-bottom:4px;"><strong style="color:var(--accent);">Estación 1:</strong> Flexiones normales — Al Fallo</div>
+                        <div style="font-size:0.82rem; margin-bottom:4px;"><strong style="color:var(--accent);">Estación 2:</strong> Remo con mancuerna — 15 Reps por lado</div>
+                        <div style="font-size:0.82rem; margin-bottom:4px;"><strong style="color:var(--accent);">Estación 3:</strong> Sentadillas libres dinámicas — 40 Reps veloces</div>
+                        <div style="font-size:0.82rem; margin-bottom:4px;"><strong style="color:var(--accent);">Estación 4:</strong> Curl de bíceps alterno — 15 Reps por lado</div>
+                        <div style="font-size:0.82rem; margin-bottom:4px;"><strong style="color:var(--accent);">Estación 5:</strong> Press militar con mancuerna — 12 Reps por lado</div>
+                        <div style="font-size:0.82rem;"><strong style="color:var(--accent);">Estación 6:</strong> Abdominales militares — 45 Segundos seguidos</div>
+                    </div>
+                </div>
+
+                <div class="intensity-box" data-day="5">
+                    <span>Percepción de Esfuerzo:</span>
+                    <button class="intensity-btn" data-level="1" onclick="setIntensity(5,1)">Suave</button>
+                    <button class="intensity-btn" data-level="2" onclick="setIntensity(5,2)">Óptimo</button>
+                    <button class="intensity-btn" data-level="3" onclick="setIntensity(5,3)">Extremo</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- HISTORIAL -->
+        <div id="content-day-8" class="day-content" role="region" aria-label="Historial">
+            <div class="day-card">
+                <h3 class="day-title" style="margin-bottom: 15px;">📊 Historial de Registros</h3>
+                <div id="history-container" class="history-list">
+                    <!-- Registros dinámicos -->
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+    /* ---------- Configuración inicial y estado ---------- */
+    const nombresDiasOriginales = {1: "Lunes", 2: "Martes", 3: "Miércoles", 4: "Jueves", 5: "Viernes"};
+    let currentActiveDay = 1;
+    let chronoInterval = null, chronoSeconds = 0, chronoRunning = false;
+    let timerInterval = null, timerSeconds = 90, timerRunning = false;
+    let movedDaysMap = {};
+    let isAppVisible = true;
+    let debounceSaveTimeout = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadMovedDays();
+        loadProgress();
+        loadTheme();
+        loadIntensityAll();
+        loadStreak();
+        setupEventHandlers();
+        restoreTimersFromStorage();
+        combinedTick();
+        startCombinedTick();
+        const hoy = new Date();
+        let diaActual = hoy.getDay(); if (diaActual === 0) diaActual = 7;
+        let targetInitialDay = diaActual;
+        if (diaActual === 6 || diaActual === 7) {
+            const foundOriginal = Object.keys(movedDaysMap).find(k => movedDaysMap[k] === diaActual);
+            if (foundOriginal) targetInitialDay = parseInt(foundOriginal);
+            else targetInitialDay = 1;
+        }
+        switchDay(targetInitialDay);
+        updateProgressBar();
+        registerServiceWorker();
+        renderHistory();
+    });
+
+    /* ---------- SERVICE WORKER OP-B (MONOLÍTICO OFFLINE) ---------- */
+    function registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+            const swContent = `
+                const CACHE_NAME = 'rutina-offline-v3';
+                self.addEventListener('install', (event) => {
+                    event.waitUntil(
+                        caches.open(CACHE_NAME).then((cache) => {
+                            return cache.add(self.location.href);
+                        })
+                    );
+                    self.skipWaiting();
+                });
+
+                self.addEventListener('activate', (event) => {
+                    event.waitUntil(
+                        caches.keys().then((keys) => {
+                            return Promise.all(
+                                keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+                            );
+                        }).then(() => self.clients.claim())
+                    );
+                });
+
+                self.addEventListener('fetch', (event) => {
+                    if (event.request.method !== 'GET') return;
+                    event.respondWith(
+                        caches.match(event.request).then((cachedResponse) => {
+                            if (cachedResponse) {
+                                fetch(event.request).then((networkResponse) => {
+                                    if (networkResponse && networkResponse.status === 200) {
+                                        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
+                                    }
+                                }).catch(() => {});
+                                return cachedResponse;
+                            }
+                            return fetch(event.request).then((networkResponse) => {
+                                if (networkResponse && networkResponse.status === 200) {
+                                    const responseToCache = networkResponse.clone();
+                                    caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
+                                }
+                                return networkResponse;
+                            });
+                        })
+                    );
+                });
+            `;
+
+            const encodedSw = 'data:application/javascript;charset=utf-8,' + encodeURIComponent(swContent);
+            
+            navigator.serviceWorker.register(encodedSw)
+                .then(() => console.log("PWA lista para trabajar totalmente sin conexión."))
+                .catch(err => console.log("Aviso SW:", err));
+        }
+    }
+
+    /* ---------- Reloj y cuenta regresiva ---------- */
+    function startCombinedTick() {
+        setInterval(() => {
+            if (!isAppVisible) return;
+            combinedTick();
+        }, 1000);
+    }
+
+    function combinedTick() {
+        const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const ahora = new Date();
+        document.getElementById('live-clock').innerText = ahora.toLocaleTimeString('es-ES');
+        const cadenaFecha = ahora.toLocaleDateString('es-ES', opcionesFecha);
+        document.getElementById('live-date').innerText = cadenaFecha.charAt(0).toUpperCase() + cadenaFecha.slice(1);
+
+        const ahora2 = new Date();
+        let diasHastaLunes = (1 - ahora2.getDay() + 7) % 7;
+        if (diasHastaLunes === 0 && (ahora2.getHours() > 0 || ahora2.getMinutes() > 0 || ahora2.getSeconds() > 0)) diasHastaLunes = 7;
+        const proximoLunes = new Date(ahora2);
+        proximoLunes.setDate(ahora2.getDate() + diasHastaLunes);
+        proximoLunes.setHours(0,0,0,0);
+        const diff = proximoLunes - ahora2;
+        const d = Math.floor(diff / (1000*60*60*24));
+        const h = Math.floor((diff / (1000*60*60)) % 24);
+        const m = Math.floor((diff / 1000 / 60) % 60);
+        const s = Math.floor((diff / 1000) % 60);
+        const timerElement = document.getElementById('weekly-reset-timer');
+        if (timerElement) timerElement.innerText = `${d}d ${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`;
+
+        if (timerRunning) {
+            timerSeconds--;
+            if (timerSeconds <= 0) {
+                timerSeconds = 0;
+                stopTimerComplete();
+            }
+            updateTimerDisplay();
+        }
+        if (chronoRunning) {
+            chronoSeconds++;
+            updateChronoDisplay();
+        }
+    }
+
+    /* ---------- Cronómetro ---------- */
+    function updateChronoDisplay() {
+        const mins = String(Math.floor(chronoSeconds / 60)).padStart(2,'0');
+        const secs = String(chronoSeconds % 60).padStart(2,'0');
+        document.getElementById('chrono-display').innerText = `${mins}:${secs}`;
+        saveTimersToStorageDebounced();
+    }
+
+    function toggleChrono() {
+        chronoRunning = !chronoRunning;
+        const btn = document.getElementById('chrono-start-btn');
+        if (chronoRunning) btn.innerText = 'Pausar'; else btn.innerText = 'Reanudar';
+        saveTimersToStorage();
+    }
+    function resetChrono() {
+        chronoRunning = false;
+        chronoSeconds = 0;
+        document.getElementById('chrono-display').innerText = '00:00';
+        document.getElementById('chrono-start-btn').innerText = 'Iniciar';
+        saveTimersToStorage();
+    }
+
+    /* ---------- Temporizador ---------- */
+    function updateTimerDisplay() {
+        const mins = String(Math.floor(timerSeconds / 60)).padStart(2,'0');
+        const secs = String(timerSeconds % 60).padStart(2,'0');
+        document.getElementById('timer-display').innerText = `${mins}:${secs}`;
+        document.getElementById('progress-bar').setAttribute('aria-valuenow', computeProgressPercentage());
+        saveTimersToStorageDebounced();
+    }
+
+    function toggleTimer() {
+        const display = document.getElementById('timer-display');
+        const btn = document.getElementById('timer-start-btn');
+        if (!timerRunning) {
+            if (timerSeconds <= 0) return;
+            timerRunning = true;
+            btn.innerText = 'Pausar';
+            display.classList.add('active-timer');
+        } else {
+            timerRunning = false;
+            btn.innerText = 'Reanudar';
+            display.classList.remove('active-timer');
+        }
+        saveTimersToStorage();
+    }
+
+    function setTimerPreset(seconds) {
+        timerRunning = false;
+        timerSeconds = seconds;
+        updateTimerDisplay();
+        const btn = document.getElementById('timer-start-btn'); if (btn) btn.innerText = 'Iniciar';
+        document.getElementById('timer-display').classList.remove('active-timer');
+        saveTimersToStorage();
+    }
+
+    function stopTimerComplete() {
+        timerRunning = false;
+        document.getElementById('timer-start-btn').innerText = 'Fin';
+        document.getElementById('timer-display').classList.remove('active-timer');
+        playBuzzerAndVibrate();
+        saveTimersToStorage();
+    }
+
+    function playBuzzerAndVibrate() {
+        if ('vibrate' in navigator) {
+            navigator.vibrate([200, 100, 200, 100, 400]);
+        }
+        try {
+            const context = new (window.AudioContext || window.webkitAudioContext)();
+            const playNote = (freq, startTime, duration) => {
+                const osc = context.createOscillator();
+                const gain = context.createGain();
+                osc.connect(gain);
+                gain.connect(context.destination);
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.3, startTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+                osc.start(startTime);
+                osc.stop(startTime + duration);
+            };
+            playNote(880, context.currentTime, 0.2);
+            playNote(1760, context.currentTime + 0.25, 0.4);
+        } catch(e) {}
+    }
+
+    /* ---------- Persistencia de timers ---------- */
+    function saveTimersToStorage() {
+        const obj = { chronoSeconds, chronoRunning, timerSeconds, timerRunning };
+        try { localStorage.setItem('rutina_timers', JSON.stringify(obj)); } catch(e){}
+    }
+    function saveTimersToStorageDebounced() {
+        clearTimeout(debounceSaveTimeout);
+        debounceSaveTimeout = setTimeout(saveTimersToStorage, 600);
+    }
+    function restoreTimersFromStorage() {
+        try {
+            const raw = localStorage.getItem('rutina_timers');
+            if (!raw) return;
+            const obj = JSON.parse(raw);
+            if (obj) {
+                chronoSeconds = Number(obj.chronoSeconds) || 0;
+                chronoRunning = Boolean(obj.chronoRunning);
+                timerSeconds = Number(obj.timerSeconds) || 90;
+                timerRunning = Boolean(obj.timerRunning);
+                updateChronoDisplay();
+                updateTimerDisplay();
+            }
+        } catch(e){}
+    }
+
+    /* ---------- Atajos de teclado ---------- */
+    document.addEventListener('keydown', (e) => {
+        if (e.target && ['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+        if (e.code === 'Space') { e.preventDefault(); toggleChrono(); }
+        if (e.key.toLowerCase() === 't') { toggleTimer(); }
+        if (e.key.toLowerCase() === 'r') { resetChrono(); }
+    });
+
+    /* ---------- Estado / progreso ---------- */
+    function computeProgressPercentage() {
+        const checkboxes = Array.from(document.querySelectorAll('#rutina-app input[type="checkbox"]'));
+        const totalGlobal = checkboxes.length;
+        const marcadosGlobal = checkboxes.filter(cb => cb.checked).length;
+        return totalGlobal > 0 ? Math.round((marcadosGlobal / totalGlobal) * 100) : 0;
+    }
+
+    function updateProgressBar() {
+        const checkboxes = Array.from(document.querySelectorAll('#rutina-app input[type="checkbox"]'));
+        const totalGlobal = checkboxes.length;
+        const marcadosGlobal = checkboxes.filter(cb => cb.checked).length;
+        let totalRepsAcumuladas = 0;
+        checkboxes.forEach(cb => {
+            if (cb.checked) {
+                const group = cb.closest('.exercise-group');
+                if (group) totalRepsAcumuladas += (parseInt(group.dataset.reps) || 0);
+            }
+        });
+
+        const porcentaje = totalGlobal > 0 ? Math.round((marcadosGlobal / totalGlobal) * 100) : 0;
+        const bar = document.getElementById('progress-bar');
+        if (bar) bar.style.width = `${porcentaje}%`;
+
+        const vBadge = document.getElementById('vol-badge');
+        if (vBadge) vBadge.innerText = `📊 Reps: ${totalRepsAcumuladas}`;
+
+        const currentDayContainer = document.getElementById(`content-day-${currentActiveDay}`);
+        if (currentDayContainer && currentActiveDay !== 8) {
+            const checkboxesDelDia = Array.from(currentDayContainer.querySelectorAll('input[type="checkbox"]'));
+            const totalDelDia = checkboxesDelDia.length;
+            const marcadosDelDia = checkboxesDelDia.filter(cb => cb.checked).length;
+
+            const hoy = new Date();
+            let diaRealSemana = hoy.getDay(); if (diaRealSemana === 0) diaRealSemana = 7;
+            const diaVisualRepresentado = movedDaysMap[currentActiveDay] || currentActiveDay;
+            const diferencia = diaVisualRepresentado - diaRealSemana;
+            let prefijoTemporal = "";
+            if (diferencia === 0) prefijoTemporal = "Hoy";
+            else if (diferencia === -1) prefijoTemporal = "Ayer";
+            else if (diferencia === 1) prefijoTemporal = "Mañana";
+            else {
+                const nombresDias = ["", "El lunes", "El martes", "El miércoles", "El jueves", "El viernes", "El sábado", "El domingo"];
+                prefijoTemporal = nombresDias[diaVisualRepresentado] || "Día";
+            }
+            const dpBadge = document.getElementById('day-progress-badge');
+            if (dpBadge) dpBadge.innerText = `${prefijoTemporal}: ${marcadosDelDia}/${totalDelDia}`;
+        }
+
+        const pText = document.getElementById('progress-text');
+        const sPanel = document.getElementById('sticky-panel');
+
+        if (porcentaje === 100 && totalGlobal > 0) {
+            if (pText) pText.innerHTML = `🔥 ¡SEMANA COMPLETADA AL 100%!`;
+            if (sPanel) sPanel.classList.add('completed-all');
+            checkAndAwardStreak();
+        } else {
+            if (pText) pText.innerText = `Progreso Semanal: ${porcentaje}% (${marcadosGlobal}/${totalGlobal})`;
+            if (sPanel) sPanel.classList.remove('completed-all');
+        }
+        if (bar) bar.setAttribute('aria-valuenow', String(porcentaje));
+        saveCurrentWeekHistory(porcentaje, totalRepsAcumuladas);
+    }
+
+    function saveCurrentWeekHistory(pct, reps) {
+        const hoy = new Date();
+        const numSemana = getWeekNumber(hoy);
+        const year = hoy.getFullYear();
+        const weekKey = `${year}-W${numSemana}`;
+        let history = {};
+        try {
+            history = JSON.parse(localStorage.getItem('rutina_historial') || '{}');
+        } catch(e){}
+        history[weekKey] = {
+            semana: `Semana ${numSemana} (${year})`,
+            porcentaje: pct,
+            reps: reps,
+            fecha: hoy.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })
+        };
+        try { localStorage.setItem('rutina_historial', JSON.stringify(history)); } catch(e){}
+    }
+
+    function renderHistory() {
+        const container = document.getElementById('history-container');
+        if (!container) return;
+        let history = {};
+        try { history = JSON.parse(localStorage.getItem('rutina_historial') || '{}'); } catch(e){}
+        const keys = Object.keys(history).reverse();
+        if (keys.length === 0) {
+            container.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem;">No hay registros acumulados todavía.</div>';
+            return;
+        }
+        let html = '';
+        keys.forEach(k => {
+            const item = history[k];
+            html += `
+                <div class="history-item">
+                    <div>
+                        <div class="history-date">${item.semana}</div>
+                        <div style="font-size:0.75rem; color:var(--text-muted);">Última act: ${item.fecha}</div>
+                    </div>
+                    <div class="history-details">
+                        <div style="font-weight:700; color:var(--warning);">${item.porcentaje}% completado</div>
+                        <div>📊 ${item.reps} reps totales</div>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    function saveProgress() {
+        const progress = {};
+        document.querySelectorAll('#rutina-app input[type="checkbox"]').forEach(cb => { progress[cb.id] = cb.checked; });
+        try { localStorage.setItem('rutina_progreso', JSON.stringify(progress)); } catch(e){}
+    }
+    function saveProgressDebounced() {
+        clearTimeout(debounceSaveTimeout);
+        debounceSaveTimeout = setTimeout(() => { saveProgress(); }, 500);
+    }
+
+    function loadProgress() {
+        try {
+            const saved = localStorage.getItem('rutina_progreso');
+            if (!saved) return;
+            const progress = JSON.parse(saved);
+            for (const id in progress) {
+                const cb = document.getElementById(id);
+                if (cb) {
+                    cb.checked = progress[id];
+                    updateLabelStyle(cb);
+                }
+            }
+        } catch(e){}
+    }
+
+    function setupEventHandlers() {
+        const app = document.getElementById('rutina-app');
+        app.addEventListener('change', (e) => {
+            if (e.target && e.target.matches('input[type="checkbox"]')) {
+                updateLabelStyle(e.target);
+                saveProgressDebounced();
+                updateProgressBar();
+            }
+        });
+
+        document.querySelectorAll('[data-preset]').forEach(btn => btn.addEventListener('click', (ev) => {
+            const seconds = parseInt(ev.currentTarget.getAttribute('data-preset'), 10) || 90;
+            setTimerPreset(seconds);
+        }));
+
+        document.getElementById('chrono-start-btn').addEventListener('click', () => toggleChrono());
+        document.getElementById('chrono-reset-btn').addEventListener('click', () => resetChrono());
+        document.getElementById('timer-start-btn').addEventListener('click', () => toggleTimer());
+        document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+        document.querySelectorAll('.btn-move-day').forEach(btn => btn.addEventListener('click', (e) => {
+            const dayNum = getDayNumFromMoveButton(e.currentTarget);
+            if (dayNum) promptMoveDay(dayNum);
+        }));
+
+        document.addEventListener('visibilitychange', () => { isAppVisible = !document.hidden; });
+    }
+
+    function getDayNumFromMoveButton(btn) {
+        const dayContent = btn.closest('.day-content');
+        if (!dayContent) return null;
+        const id = dayContent.id || '';
+        const m = id.match(/content-day-(\d+)/);
+        return m ? Number(m[1]) : null;
+    }
+
+    function updateLabelStyle(checkbox) {
+        const lab = checkbox.closest('label.checkbox-item');
+        if (!lab) return;
+        if (checkbox.checked) lab.classList.add('checked'); else lab.classList.remove('checked');
+    }
+
+    function promptMoveDay(dayNum) {
+        const destino = prompt(`¿A qué día quieres transferir este entrenamiento?\nEscribe: "sábado" o "domingo"\n(Para restaurar escribe "original")`);
+        if (!destino) return;
+        const cleanDestino = destino.trim().toLowerCase();
+        if (cleanDestino === 'sábado' || cleanDestino === 'sabado' || cleanDestino === '6') {
+            movedDaysMap[dayNum] = 6; alert('Entrenamiento movido al Sábado.');
+        } else if (cleanDestino === 'domingo' || cleanDestino === '7') {
+            movedDaysMap[dayNum] = 7; alert('Entrenamiento movido al Domingo.');
+        } else if (cleanDestino === 'original') {
+            delete movedDaysMap[dayNum]; alert('Restaurado a su día original.');
+        } else { alert('Opción no válida.'); return; }
+
+        try { localStorage.setItem('rutina_dias_movidos', JSON.stringify(movedDaysMap)); } catch(e){}
+        renderMovedDaysUI();
+        switchDay(dayNum);
+    }
+
+    function loadMovedDays() {
+        try {
+            const saved = localStorage.getItem('rutina_dias_movidos');
+            if (saved) movedDaysMap = JSON.parse(saved);
+        } catch(e){}
+        renderMovedDaysUI();
+    }
+
+    function renderMovedDaysUI() {
+        for (let i = 1; i <= 5; i++) {
+            const btn = document.getElementById(`btn-day-${i}`);
+            if (btn) { btn.innerText = nombresDiasOriginales[i]; btn.classList.remove('has-moved-content'); }
+        }
+
+        const anyMovedToWeekend = Object.values(movedDaysMap).some(v => v === 6 || v === 7);
+        document.getElementById('btn-day-6').style.display = anyMovedToWeekend ? '' : 'none';
+        document.getElementById('btn-day-7').style.display = anyMovedToWeekend ? '' : 'none';
+
+        for (const originalDay in movedDaysMap) {
+            const target = movedDaysMap[originalDay];
+            const btnOriginal = document.getElementById(`btn-day-${originalDay}`);
+            if (btnOriginal) {
+                if (target === 6) { btnOriginal.innerText = "➡️ Sáb."; btnOriginal.classList.add('has-moved-content'); }
+                else if (target === 7) { btnOriginal.innerText = "➡️ Dom."; btnOriginal.classList.add('has-moved-content'); }
+            }
+        }
+    }
+
+    function checkAndAwardStreak() {
+        const hoy = new Date();
+        const numSemana = getWeekNumber(hoy);
+        const streakKey = 'rutina_racha_conteo';
+        const lastAwardedKey = 'rutina_racha_ultima_sem';
+        if (localStorage.getItem(lastAwardedKey) !== String(numSemana)) {
+            let currentStreak = parseInt(localStorage.getItem(streakKey)) || 0;
+            currentStreak++;
+            try { localStorage.setItem(streakKey, currentStreak); localStorage.setItem(lastAwardedKey, String(numSemana)); } catch(e){}
+            loadStreak();
+        }
+    }
+    function loadStreak() {
+        const currentStreak = localStorage.getItem('rutina_racha_conteo') || 0;
+        const sBadge = document.getElementById('streak-badge');
+        if (sBadge) sBadge.innerText = `🔥 Racha: ${currentStreak} sem`;
+    }
+
+    function setIntensity(dayNum, level) {
+        document.querySelectorAll(`.intensity-box[data-day="${dayNum}"] .intensity-btn`).forEach(b => b.classList.remove('active'));
+        if (level) {
+            const activeBtn = document.querySelector(`.intensity-box[data-day="${dayNum}"] .intensity-btn[data-level="${level}"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+        }
+        try { localStorage.setItem(`rutina_intensidad_dia_${dayNum}`, level || ""); } catch(e){}
+    }
+    function loadIntensityAll() {
+        for (let i=1;i<=5;i++) {
+            const val = localStorage.getItem(`rutina_intensidad_dia_${i}`);
+            if (val) setIntensity(i, parseInt(val));
+        }
+    }
+
+    function toggleTheme() {
+        if (document.documentElement.getAttribute('data-theme') === 'tactical') {
+            document.documentElement.removeAttribute('data-theme');
+            document.getElementById('theme-toggle').setAttribute('aria-pressed','false');
+            try { localStorage.setItem('rutina_tema','normal'); } catch(e){}
+        } else {
+            document.documentElement.setAttribute('data-theme','tactical');
+            document.getElementById('theme-toggle').setAttribute('aria-pressed','true');
+            try { localStorage.setItem('rutina_tema','tactical'); } catch(e){}
+        }
+    }
+    function loadTheme() {
+        if (localStorage.getItem('rutina_tema') === 'tactical') {
+            document.documentElement.setAttribute('data-theme','tactical');
+            document.getElementById('theme-toggle').setAttribute('aria-pressed','true');
+        }
+    }
+
+    function switchDay(dayNumber) {
+        currentActiveDay = dayNumber;
+        document.querySelectorAll('.day-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.day-content').forEach(content => content.classList.remove('active'));
+        const btn = document.getElementById(`btn-day-${dayNumber}`);
+        const content = document.getElementById(`content-day-${dayNumber}`);
+        if (btn) btn.classList.add('active');
+        if (content) content.classList.add('active');
+        if (dayNumber === 8) renderHistory();
+        updateProgressBar();
+    }
+
+    function checkAutoReset() {
+        const hoy = new Date();
+        if (hoy.getDay() === 1 && localStorage.getItem('ultimo_reinicio_semana') !== String(getWeekNumber(hoy))) {
+            clearAllCheckboxes();
+            localStorage.removeItem('rutina_dias_movidos');
+            movedDaysMap = {};
+            for (let i=1;i<=5;i++) localStorage.removeItem(`rutina_intensidad_dia_${i}`);
+            try { localStorage.setItem('ultimo_reinicio_semana', String(getWeekNumber(hoy))); } catch(e){}
+            renderMovedDaysUI();
+        }
+    }
+    setInterval(() => { if (isAppVisible) checkAutoReset(); }, 60*1000);
+
+    function getWeekNumber(d) {
+        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+        return Math.ceil((((d - new Date(Date.UTC(d.getUTCFullYear(),0,1))) / 86400000) + 1)/7);
+    }
+
+    function clearAllCheckboxes() {
+        document.querySelectorAll('#rutina-app input[type="checkbox"]').forEach(cb => {
+            cb.checked = false; updateLabelStyle(cb);
+        });
+        saveProgress();
+        updateProgressBar();
+    }
+
+    function saveProgressOnUnload() {
+        saveProgress();
+        saveTimersToStorage();
+    }
+    window.addEventListener('beforeunload', saveProgressOnUnload);
+</script>
+</body>
+</html>
